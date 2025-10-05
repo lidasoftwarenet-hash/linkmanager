@@ -1,10 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Button Manager</title>
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
-$END$
+<img src="adv.webp" alt="Advanced Link Manager" class="logo">
+
+<div class="button-container">
+
+    <button id="manageCategoriesBtn">Manage Categories</button>
+    <button id="addLinkPopUp">Add Link</button>
+    <div id="linkPopup" class="popup">
+        <div class="popup-content">
+            <span class="close" id="closePopupBtn">&times;</span>
+            <h2>Add New Link</h2>
+            <div class="input-container">
+                <label for="buttonTitle">Title</label>
+                <input type="text" id="buttonTitle" placeholder="Button Title">
+
+                <label for="buttonUrl">URL</label>
+                <input type="text" id="buttonUrl" placeholder="Button URL">
+
+                <div id="iconPopup" class="popup">
+                    <label for="buttonIcon">Selected Icon</label>
+                    <input type="hidden" id="buttonIcon">
+                    <div class="popup-content icon-popup-content">
+                        <h2>Select an Icon</h2>
+                        <div class="icon-popup-gallery" id="iconPopupGallery">
+                        </div>
+                        <div class="popup-buttons">
+                            <button id="saveIconSelection">Save</button>
+                            <button id="cancelIconSelection">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <label for="iconBrowse">Icon</label>
+                <div class="icon-section">
+                <img id="iconPreview" src="" alt="Selected Icon" style="width: 50px; height: 50px;">
+                <button type="button" id="iconBrowse">Browse Icons</button>
+                </div>
+                <label for="buttonCategory">Category</label>
+                <select id="buttonCategory">
+                    <option value="" disabled selected>Select a Category</option>
+                    <option value="Work">Work</option>
+                    <option value="Personal">Personal</option>
+                </select>
+
+                <button id="addLinkButton" class="wide-button">Add</button>
+                <button id="cancelPopup" class="wide-button">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="popupMode" value="add">
+    <button id="editToggle">Edit</button>
+    <button id="cancelEdit" style="display:none;">Cancel Edit Mode</button>
+    <button id="exportSettings">Export Settings</button>
+    <button id="importSettings">Import Settings</button>
+
+    <div id="importPopup" class="popup">
+        <div class="popup-content">
+            <span class="close" id="closeImportPopup">&times;</span>
+            <h2>Import Settings</h2>
+            <p>Select a JSON file to import your settings:</p>
+            <input type="file" id="importFile" accept=".json">
+        </div>
+    </div>
+
+    <div id="editPopup" class="popup">
+        <div class="popup-content">
+            <span class="close" id="closeEditPopup">&times;</span>
+            <h2>Edit Link</h2>
+            <div class="input-container">
+                <label for="editButtonTitle">Title</label>
+                <input type="text" id="editButtonTitle" placeholder="Button Title">
+
+                <label for="editButtonUrl">URL</label>
+                <input type="text" id="editButtonUrl" placeholder="Button URL">
+
+                <label for="editButtonCategory">Category</label>
+                <select id="editButtonCategory">
+                    <option value="Work">Work</option>
+                    <option value="Personal">Personal</option>
+                </select>
+
+                <button id="saveEditButton">Save</button>
+                <button id="cancelEditPopup">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<div id="categoryManagement">
+    <h3>Manage Categories</h3>
+    <label for="newCategoryInput"></label><input type="text" id="newCategoryInput" placeholder="New Category Name">
+    <button id="addCategoryBtn">Add Category</button>
+    <div class="categories-list" id="categoriesList"></div>
+</div>
+
+
+
+<div id="categoryTabs" class="category-tabs">
+</div>
+
+<div id="buttonContainer" class="button-container">
+</div>
+<p>&copy; Advanced Link Manager. All rights reserve to LiDa Software</p>
+
+
+
+<footer class="footer">
+    <p>Version 1.1.0</p>
+</footer>
+
+
+
+<script src="index.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,534 @@
+html, body {
+    width: 800px;  /* Adjust width */
+    height: 600px; /* Adjust height */
+    margin: 0;
+    overflow: auto;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 20px;
+    transition: background-color 0.3s ease;
+    background-image: url("bk.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    background-color: white
+
+}
+.button-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px 0;
+    gap: 10px;
+}
+.button-entry {
+    display: flex;
+    flex-direction: column; /* Stack the button and category label */
+    align-items: center; /* Center the content horizontally */
+    justify-content: center; /* Center the content vertically */
+    margin: 10px;
+    padding: 15px;
+    width: 150px; /* Adjust the width to fit the button */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    overflow: hidden; /* Prevent content from overflowing */
+}
+.button-entry button {
+    display: flex; /* Enable flexbox for the button layout */
+    align-items: center; /* Align icon and text vertically */
+    justify-content: center; /* Center icon and text horizontally */
+    gap: 8px; /* Add spacing between the icon and text */
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%; /* Make the button fit the container */
+    max-width: 100%; /* Ensure it doesn't overflow */
+    text-align: center;
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add ellipsis for long text */
+}
+.button-entry button img {
+    width: 20px; /* Fixed width for the icon */
+    height: 20px; /* Fixed height for the icon */
+    flex-shrink: 0; /* Prevent icon from shrinking */
+}
+.button-entry button:hover {
+    background-color: #0056b3;
+}
+
+.category-tabs {
+    gap: 10px;
+    padding: 5px;
+    background: #4e6797;
+}
+.category-tab.active {
+    background: #0b1785;
+    color: white;
+}
+.category-management {
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 600px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    display: none;
+}
+.category-management.visible {
+    display: block;
+}
+.categories-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 20px 0;
+}
+.category-item {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 3px 9px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+.category-item button {
+    margin-left: 3px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #c91f28;
+    font-size: 16px;
+}
+.category-label {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    display: block;
+}
+
+
+.input-container {
+    margin: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+}
+.input-container input, .input-container select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 200px;
+}
+.input-container button {
+    background: #2857a7;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.dropdown {
+    position: absolute;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;  /* Ensure it's above other elements */
+    width: 250px;  /* Fixed width for visibility */
+    display: block !important;  /* Force display to override hidden */
+}
+.dropdown input, .dropdown select {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.logo {
+    width: 120px;   /* Set width */
+    height: auto;   /* Maintain aspect ratio */
+}
+
+.button-container {
+    margin-top: 20px;
+}
+button:hover {
+    background-color: #0099cc;  /* Darker blue on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+button {
+    font-size: 14px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#categoryManagement button {
+    font-size: 14px;  /* Same as default */
+    padding: 8px 12px;  /* Same as default */
+}
+
+#categoryManagement {
+    display: none;
+}
+
+#categoryManagement.visible {
+    display: block;
+}
+.popup {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;  /* Increase to make it bigger */
+    max-width: 800px;  /* Larger max width */
+    height: 90%;  /* Take most of the height */
+    max-height: 700px;  /* Prevent overflow */
+    background-color: rgba(255, 255, 255, 1);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.popup-content {
+    max-height: 550px;
+    padding: 30px;
+    text-align: center;
+    overflow-y: auto;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 30px;
+    cursor: pointer;
+    color: #333;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.input-container label {
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: 5px;
+}
+
+.icon-gallery {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.icon-option {
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.icon-option:hover {
+    transform: scale(1.1);
+}
+
+.selected-icon {
+    border: 2px solid #007BFF;  /* Highlight the selected icon */
+}
+
+.icon-popup-content {
+    width: 70%;
+    max-width: 600px;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.icon-popup-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.icon-popup-gallery img {
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s ease;
+}
+
+.icon-popup-gallery img:hover {
+    transform: scale(1.1);
+}
+
+.selected-icon {
+    border-color: #007BFF;
+}
+
+.popup-buttons {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-around;
+}
+
+.footer {
+    font: italic 14px "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-around;
+    color: #8c8b8b;
+
+}
+
+.popup-buttons button {
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+}
+
+#saveIconSelection {
+    background-color: #4CAF50;
+    color: white;
+}
+
+#cancelIconSelection {
+    background-color: #f44336;
+    color: white;
+}
+
+#saveIconSelection:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.selected-icon {
+    border: 3px solid #4CAF50;  /* Green border */
+    border-radius: 45px;
+    opacity: 0.8;
+    background-color: #625e5e;
+}
+
+#iconPreview {
+    display: none; /* Initially hidden */
+    width: 50px;
+    height: 50px;
+    margin-top: 10px;
+}
+
+.icon-option {
+    cursor: pointer;
+    border: 2px solid transparent;
+    padding: 5px;
+    transition: border-color 0.3s;
+}
+
+.icon-option:hover {
+    border-color: #007bff; /* Highlight on hover */
+}
+
+.selected-icon {
+    border-color: #007bff; /* Highlight when selected */
+}
+
+.icon-section {
+    display: flex;
+    align-items: center; /* Align items vertically */
+    gap: 10px; /* Add spacing between elements */
+    margin-bottom: 20px; /* Add some space below the section */
+}
+
+.icon-preview {
+    display: none; /* Initially hidden */
+    width: 50px;
+    height: 50px;
+}
+
+.browse-icons {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.browse-icons:hover {
+    background-color: #0056b3;
+}
+
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%; /* Adjust width to fit smaller screens */
+    max-width: 600px; /* Limit maximum width */
+    max-height: 90%; /* Allow the popup to take up to 90% of the viewport height */
+    overflow-y: auto; /* Enable vertical scrolling when content overflows */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.wide-button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 110px;
+    display: inline-block;
+    text-align: center; /* Center the text horizontally */
+    line-height: 1.5; /* Adjust line height for vertical centering */
+}
+
+.wide-button:hover {
+    background-color: #0056b3; /* Same hover effect */
+}
+
+#newCategoryInput {
+    width: 300px; /* Set the desired width */
+    padding: 8px; /* Optional: Add padding for better appearance */
+    border: 1px solid #ccc; /* Optional: Border for styling */
+    border-radius: 4px; /* Optional: Rounded corners */
+    font-size: 14px; /* Optional: Adjust font size */
+}
+
+.edit-category-input {
+    font-size: 14px;
+    padding: 4px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 150px; /* Adjust as needed */
+}
+
+.enter-button {
+    font-size: 14px;
+    padding: 4px 8px;
+    margin-left: 5px; /* Add spacing between the input and the button */
+    border: 1px solid #ccc;
+    background-color: #4CAF50; /* Green background for active state */
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.enter-button:disabled {
+    background-color: #ccc; /* Grey background when disabled */
+    cursor: not-allowed;
+}
+
+.button-controls {
+    display: flex;
+    gap: 5px;
+    margin-top: 8px;
+}
+
+.control-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 8px;
+    padding: 3px 6px;
+    border-radius: 3px;
+    color: #c91f28;
+    transition: background-color 0.2s;
+}
+
+.control-button:hover {
+    background-color: rgba(201, 31, 40, 0.1);
+}
+
+.edit-button {
+    color: #b31414;
+}
+
+.editInButton {
+    background-color: rgba(0, 0, 0, 0); !important;
+    color: #b31414 !important;
+}
+
+.button-controls {
+    position: absolute;
+    right: -30px; /* Position controls to the right of the button entry */
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.control-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px;
+    color: #c91f28;
+    transition: color 0.2s;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-button:hover {
+    opacity: 0.7;
+}
+
+.edit-button {
+    color: #dd0000;
+}
+
+.remove-button {
+    color: #c91f28;
+    font-size: 18px;
+}
+
+.button-entry {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 10px 20px; /* Add extra margin on the right for controls */
+    padding: 15px;
+    width: 150px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+
