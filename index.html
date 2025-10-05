@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
+<!-- Toast Container -->
+<div id="toastContainer" class="toast-container"></div>
+
 <img src="adv.webp" alt="Advanced Link Manager" class="logo">
 
 <div class="button-container">
@@ -65,8 +68,26 @@
         <div class="popup-content">
             <span class="close" id="closeImportPopup">&times;</span>
             <h2>Import Settings</h2>
-            <p>Select a JSON file to import your settings:</p>
-            <input type="file" id="importFile" accept=".json">
+            <p style="color: #6b7280; margin-bottom: 25px;">Upload a JSON file to restore your links and categories</p>
+            
+            <div class="file-upload-container">
+                <div class="file-upload-box" id="fileUploadBox">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <p class="upload-text">Click to browse or drag and drop</p>
+                    <p class="upload-hint">JSON files only</p>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                </div>
+                <div id="fileNameDisplay" class="file-name-display" style="display: none;">
+                    <span class="file-name"></span>
+                    <button class="remove-file-btn" id="removeFileBtn">×</button>
+                </div>
+            </div>
+            
+            <button id="confirmImportBtn" class="import-btn" style="display: none;">Import Data</button>
         </div>
     </div>
 
@@ -96,9 +117,9 @@
 
 </div>
 
-<div id="categoryManagement">
+<div id="categoryManagement" style="display: none;">
     <h3>Manage Categories</h3>
-    <label for="newCategoryInput"></label><input type="text" id="newCategoryInput" placeholder="New Category Name">
+    <label for="newCategoryInput">New Category:</label><input type="text" id="newCategoryInput" placeholder="New Category Name">
     <button id="addCategoryBtn">Add Category</button>
     <div class="categories-list" id="categoriesList"></div>
 </div>
@@ -108,14 +129,24 @@
 <div id="categoryTabs" class="category-tabs">
 </div>
 
+<!-- Search Bar -->
+<div class="search-container">
+    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+    </svg>
+    <input type="text" id="searchInput" class="search-input" placeholder="Search links by title or URL...">
+    <button id="clearSearch" class="clear-search" style="display: none;">×</button>
+</div>
+
 <div id="buttonContainer" class="button-container">
 </div>
-<p>&copy; Advanced Link Manager. All rights reserve to LiDa Software</p>
+<p>&copy; Advanced Link Manager. All rights reserved to LiDa Software</p>
 
 
 
 <footer class="footer">
-    <p>Version 1.1.0</p>
+    <p>Version 2.0.0</p>
 </footer>
 
 

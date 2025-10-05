@@ -6,6 +6,36 @@ let tempSelectedIcon = null;
 let selectedIcon = '';
 let popupMode = "add";
 
+// Toast Notification System
+function showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icons = {
+        success: '✓',
+        error: '✕',
+        warning: '⚠',
+        info: 'ℹ'
+    };
+    
+    toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || icons.info}</span>
+        <span class="toast-message">${message}</span>
+        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Auto remove after duration
+    if (duration > 0) {
+        setTimeout(() => {
+            toast.classList.add('removing');
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
+}
+
 
 window.onload = function () {
     initializeCategories();
@@ -14,10 +44,6 @@ window.onload = function () {
     if (window.innerWidth < 1200) {
         window.resizeTo(1200, 800);
     }
-    console.log("Loading saved data..."); 
-    initializeCategories();
-
-    console.log("Saved buttons data:", savedButtons); 
 
     const container = document.getElementById('buttonContainer');
     container.innerHTML = '';
@@ -67,25 +93,20 @@ window.onload = function () {
 };
 
 window.onclick = function (event) {
-    const popup = document.getElementById("linkPopup");
-    if (event.target === popup) {
-        popup.style.display = "none";
-    }
-}
-
-window.onclick = function (event) {
+    const linkPopup = document.getElementById("linkPopup");
     const importPopup = document.getElementById("importPopup");
+    const iconPopup = document.getElementById('iconPopup');
+    
+    if (event.target === linkPopup) {
+        linkPopup.style.display = "none";
+    }
     if (event.target === importPopup) {
         importPopup.style.display = "none";
     }
-}
-
-window.addEventListener('click', function (event) {
-    const popup = document.getElementById('iconPopup');
-    if (event.target === popup) {
-        popup.style.display = 'none';
+    if (event.target === iconPopup) {
+        iconPopup.style.display = 'none';
     }
-});
+};
 
 document.getElementById('saveIconSelection').addEventListener('click', function () {
     if (tempSelectedIcon) {
@@ -148,10 +169,73 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('closeImportPopup').addEventListener('click', closeImportPopup);
     document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
     document.getElementById('closePopupBtn').addEventListener('click', closePopup);
+    
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    
+    searchInput.addEventListener('input', handleSearch);
+    clearSearchBtn.addEventListener('click', clearSearch);
+    
     document.addEventListener('DOMContentLoaded', function () {
         document.body.style.backgroundColor = editMode ? '#0d0000' : 'white';
     });
 });
+
+// Search functionality
+function handleSearch(e) {
+    const searchTerm = e.target.value.toLowerCase().trim();
+    const clearBtn = document.getElementById('clearSearch');
+    const allButtons = document.querySelectorAll('.button-entry');
+    
+    // Show/hide clear button
+    clearBtn.style.display = searchTerm ? 'flex' : 'none';
+    
+    // If search is empty, show all buttons according to current category filter
+    if (!searchTerm) {
+        filterButtons(currentCategory);
+        return;
+    }
+    
+    // Search through all buttons
+    let matchCount = 0;
+    allButtons.forEach(entry => {
+        const button = entry.querySelector('button');
+        const title = button.textContent.toLowerCase();
+        const url = button.getAttribute('data-url').toLowerCase();
+        const category = entry.getAttribute('data-category');
+        
+        // Check if matches search term
+        const matchesSearch = title.includes(searchTerm) || url.includes(searchTerm);
+        
+        // Check if matches current category filter (or if "all" is selected)
+        const matchesCategory = currentCategory === 'all' || category === currentCategory;
+        
+        // Show only if matches both search and category
+        if (matchesSearch && matchesCategory) {
+            entry.style.display = 'block';
+            matchCount++;
+        } else {
+            entry.style.display = 'none';
+        }
+    });
+    
+    // Show toast if no results
+    if (matchCount === 0) {
+        showToast(`No links found matching "${searchTerm}"`, 'info', 2000);
+    }
+}
+
+function clearSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    
+    searchInput.value = '';
+    clearBtn.style.display = 'none';
+    
+    // Reset to current category filter
+    filterButtons(currentCategory);
+}
 
 document.addEventListener('click', function (event) {
     if (currentDropdown && !currentDropdown.contains(event.target)) {
@@ -165,7 +249,80 @@ document.addEventListener('click', function (event) {
 
 document.addEventListener('DOMContentLoaded', function () {
     const importFileInput = document.getElementById('importFile');
-    importFileInput.addEventListener('change', importData);
+    const fileUploadBox = document.getElementById('fileUploadBox');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const confirmImportBtn = document.getElementById('confirmImportBtn');
+    const removeFileBtn = document.getElementById('removeFileBtn');
+    let selectedFile = null;
+
+    // Click to select file
+    fileUploadBox.addEventListener('click', () => {
+        importFileInput.click();
+    });
+
+    // File selection handler
+    importFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file && file.type === 'application/json') {
+            selectedFile = file;
+            showFileSelected(file.name);
+        } else {
+            showToast('Please select a valid JSON file', 'error');
+        }
+    });
+
+    // Drag and drop handlers
+    fileUploadBox.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileUploadBox.style.borderColor = '#667eea';
+        fileUploadBox.style.background = '#f3f4f6';
+    });
+
+    fileUploadBox.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        fileUploadBox.style.borderColor = '#d1d5db';
+        fileUploadBox.style.background = '#f9fafb';
+    });
+
+    fileUploadBox.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileUploadBox.style.borderColor = '#d1d5db';
+        fileUploadBox.style.background = '#f9fafb';
+        
+        const file = e.dataTransfer.files[0];
+        if (file && file.type === 'application/json') {
+            selectedFile = file;
+            importFileInput.files = e.dataTransfer.files;
+            showFileSelected(file.name);
+        } else {
+            showToast('Please drop a valid JSON file', 'error');
+        }
+    });
+
+    // Show file selected
+    function showFileSelected(fileName) {
+        fileUploadBox.style.display = 'none';
+        fileNameDisplay.style.display = 'flex';
+        fileNameDisplay.querySelector('.file-name').textContent = fileName;
+        confirmImportBtn.style.display = 'block';
+    }
+
+    // Remove file
+    removeFileBtn.addEventListener('click', () => {
+        selectedFile = null;
+        importFileInput.value = '';
+        fileUploadBox.style.display = 'block';
+        fileNameDisplay.style.display = 'none';
+        confirmImportBtn.style.display = 'none';
+    });
+
+    // Confirm import
+    confirmImportBtn.addEventListener('click', () => {
+        if (selectedFile) {
+            const event = { target: { files: [selectedFile] } };
+            importData(event);
+        }
+    });
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -393,11 +550,11 @@ function showEditPopup(button, div, title, url, category) {
         // 7. Reset icon variables, close popup
         selectedIcon = '';
         tempSelectedIcon = '';
-        showCustomAlertNoOk('Data updated successfully! The extension will now reload. Please reopen it to see the updates.');
-        setTimeout(() => {
-                chrome.runtime.reload();
-            }, 2000);
         closePopup();
+        showToast('Data updated successfully! Reloading...', 'success', 1500);
+        setTimeout(() => {
+            location.reload();
+        }, 1500);
     });
 
 
@@ -437,13 +594,22 @@ function importData(event) {
                 data.buttons = data.buttons.map(button => {
                     if (button.image) {
                         console.log("Processing image path:", button.image);
+                        
+                        // Handle chrome-extension:// URLs - extract just the relative path
+                        if (button.image.includes('chrome-extension://')) {
+                            const match = button.image.match(/icons\/i\d+\.png$/);
+                            if (match) {
+                                button.image = match[0];
+                                console.log("Extracted relative path from chrome-extension URL:", button.image);
+                            }
+                        }
                         // Handle relative paths
-                        if (button.image.startsWith('./')) {
+                        else if (button.image.startsWith('./')) {
                             button.image = button.image.replace('./', 'icons/');
                             console.log("Converted relative path to:", button.image);
                         }
-                        // Handle direct icon references
-                        if (!button.image.startsWith('icons/')) {
+                        // Handle direct icon references (e.g., "i91.png")
+                        else if (!button.image.startsWith('icons/') && button.image.match(/^i\d+\.png$/)) {
                             button.image = `icons/${button.image}`;
                             console.log("Added icons/ prefix:", button.image);
                         }
@@ -468,7 +634,7 @@ function importData(event) {
                             'icons/i51.png', 'icons/i52.png', 'icons/i53.png', 'icons/i54.png', 'icons/i55.png',
                             'icons/i56.png', 'icons/i57.png', 'icons/i58.png', 'icons/i59.png','icons/i60.png',
 
-                             'icons/i62.png', 'icons/i63.png', 'icons/i64.png', 'icons/i65.png',
+                            'icons/i61.png', 'icons/i62.png', 'icons/i63.png', 'icons/i64.png', 'icons/i65.png',
                             'icons/i66.png', 'icons/i67.png', 'icons/i68.png', 'icons/i69.png','icons/i70.png',
 
                             'icons/i71.png', 'icons/i72.png', 'icons/i73.png', 'icons/i74.png', 'icons/i80.png',
@@ -552,12 +718,20 @@ function importData(event) {
                 console.log("Button created and added to container");
             });
 
-            showCustomAlert('Data imported successfully!', true);
+            showToast('Data imported successfully! Reloading...', 'success', 1500);
             event.target.value = ''; // Reset the file input
+            
+            // Close import popup
+            closeImportPopup();
+            
+            // Reload the page to show imported data
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
 
         } catch (error) {
             console.error('Error importing file:', error);
-            showCustomAlert('Failed to import. Please check the file format.');
+            showToast('Failed to import. Please check the file format.', 'error');
         }
     };
 
@@ -638,10 +812,10 @@ function addCategory() {
     const newCategory = input.value.trim();
 
     const categoryExists = categories.some(cat => cat.trim().toLowerCase() === newCategory.toLowerCase());
-    const maxTitleLength = 12;
+    const maxTitleLength = 15;
 
     if (newCategory.length > maxTitleLength) {
-        showCustomAlert(`Title must not exceed ${maxTitleLength} characters.`);
+        showCustomAlert(`Category name must not exceed ${maxTitleLength} characters.`);
         return;
     }
     if (newCategory && !categoryExists) {
@@ -815,7 +989,7 @@ function cleanLocalStorage() {
 
 function addButton(title = '', url = '', category = '',isEdit = false) {
     console.log("Add button:", title, url, category);
-    const maxTitleLength = 12;
+    const maxTitleLength = 25;
     if (!title) title = document.getElementById('buttonTitle').value;
     if (!url) url = document.getElementById('buttonUrl').value;
     if (!category) category = document.getElementById('buttonCategory').value;
@@ -966,6 +1140,14 @@ function toggleCategoryManagement() {
 }
 
 function toggleEditMode() {
+    // Check if there are any links to edit
+    const buttons = JSON.parse(localStorage.getItem('buttons')) || [];
+    
+    if (!editMode && buttons.length === 0) {
+        showToast('Cannot enter edit mode: No links found. Add some links first!', 'warning', 4000);
+        return;
+    }
+
     editMode = !editMode;
 
     const allButtons = document.querySelectorAll('.button-entry');
@@ -977,23 +1159,57 @@ function toggleEditMode() {
             buttonControls.className = 'button-controls';
 
             const editBtn = document.createElement('button');
-            editBtn.innerHTML = '✎     .    .      .';
-            //editBtn.className = 'editInButton';
-            editBtn.style.backgroundColor = "transparent";
-            editBtn.style.color = "#c91f28";
+            editBtn.innerHTML = '✎ Edit';
+            editBtn.className = 'edit-control-btn';
+            editBtn.style.backgroundColor = "#10b981";
+            editBtn.style.color = "black";
             editBtn.style.border = "none";
-            editBtn.style.padding = "0px";
-            editBtn.style.fontSize = "18px";
+            editBtn.style.padding = "5px 12px";
+            editBtn.style.fontSize = "12px";
+            editBtn.style.borderRadius = "4px";
+            editBtn.style.cursor = "pointer";
+            editBtn.style.fontWeight = "600";
+            editBtn.style.transition = "all 0.3s ease";
+            editBtn.style.display = "flex";
+            editBtn.style.alignItems = "center";
+            editBtn.style.gap = "4px";
+            editBtn.style.textTransform = "uppercase";
+            editBtn.style.letterSpacing = "0.5px";
+            editBtn.onmouseover = () => {
+                editBtn.style.backgroundColor = "#059669";
+                editBtn.style.transform = "scale(1.05)";
+            };
+            editBtn.onmouseout = () => {
+                editBtn.style.backgroundColor = "#10b981";
+                editBtn.style.transform = "scale(1)";
+            };
             editBtn.onclick = () => editLink(entry);
 
             const removeBtn = document.createElement('button');
-            removeBtn.innerHTML = '×     .    .      .';
-            //removeBtn.className = 'editInButton';
-            removeBtn.style.backgroundColor = "transparent";
-            removeBtn.style.color = "#c91f28";
+            removeBtn.innerHTML = '× Delete';
+            removeBtn.className = 'delete-control-btn';
+            removeBtn.style.backgroundColor = "#f97316";
+            removeBtn.style.color = "black";
             removeBtn.style.border = "none";
-            removeBtn.style.padding = "0px";
-            removeBtn.style.fontSize = "18px";
+            removeBtn.style.padding = "5px 12px";
+            removeBtn.style.fontSize = "12px";
+            removeBtn.style.borderRadius = "4px";
+            removeBtn.style.cursor = "pointer";
+            removeBtn.style.fontWeight = "600";
+            removeBtn.style.transition = "all 0.3s ease";
+            removeBtn.style.display = "flex";
+            removeBtn.style.alignItems = "center";
+            removeBtn.style.gap = "4px";
+            removeBtn.style.textTransform = "uppercase";
+            removeBtn.style.letterSpacing = "0.5px";
+            removeBtn.onmouseover = () => {
+                removeBtn.style.backgroundColor = "#ea580c";
+                removeBtn.style.transform = "scale(1.05)";
+            };
+            removeBtn.onmouseout = () => {
+                removeBtn.style.backgroundColor = "#f97316";
+                removeBtn.style.transform = "scale(1)";
+            };
             removeBtn.onclick = () => removeLink(entry);
 
             buttonControls.appendChild(editBtn);
@@ -1014,6 +1230,14 @@ function toggleEditMode() {
 }
 
 function exportData() {
+    // Check if there are any buttons to export
+    const buttons = JSON.parse(localStorage.getItem('buttons')) || [];
+    
+    if (buttons.length === 0) {
+        showToast('Cannot export: No links found. Add some links first!', 'warning', 4000);
+        return;
+    }
+
     const allData = {};
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -1023,10 +1247,14 @@ function exportData() {
     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'button_manager_data.json';
+    
+    // Add timestamp to filename
+    const date = new Date();
+    const timestamp = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    a.download = `link-manager-backup-${timestamp}.json`;
     a.click();
 
-    showCustomAlert('Data exported successfully!');
+    showToast('Data exported successfully!', 'success');
 }
 
 function openPopup() {
@@ -1132,7 +1360,7 @@ function openIconPopup() {
         'icons/i51.png', 'icons/i52.png', 'icons/i53.png', 'icons/i54.png', 'icons/i55.png',
         'icons/i56.png', 'icons/i57.png', 'icons/i58.png', 'icons/i59.png','icons/i60.png',
 
-        'icons/i62.png', 'icons/i63.png', 'icons/i64.png', 'icons/i65.png',
+        'icons/i61.png', 'icons/i62.png', 'icons/i63.png', 'icons/i64.png', 'icons/i65.png',
         'icons/i66.png', 'icons/i67.png', 'icons/i68.png', 'icons/i69.png','icons/i70.png',
 
         'icons/i71.png', 'icons/i72.png', 'icons/i73.png', 'icons/i74.png', 'icons/i80.png',
@@ -1206,10 +1434,3 @@ function removeLink(entry) {
         saveButtons(); // Save updated buttons to local storage
     }
 }
-
-
-
-
-
-
-

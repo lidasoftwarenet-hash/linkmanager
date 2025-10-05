@@ -1,14 +1,19 @@
 {
   "manifest_version": 3,
   "name": "Advanced Link Manager",
-  "version": "3.0",
+  "version": "3.0.0",
   "description": "Manage your links easily with this extension",
   "action": {
     "default_popup": "index.html",
     "default_icon": {
-      "16": "logo/16.png",
-      "48": "logo/48.png",
-      "128": "logo/128.png"
+      "16": "icon-16.png.png",
+      "48": "icon-48.png.png",
+      "128": "icon-128.png.png"
     }
+  },
+  "icons": {
+    "16": "icon-16.png.png",
+    "48": "icon-48.png.png",
+    "128": "icon-128.png.png"
   }
 }
