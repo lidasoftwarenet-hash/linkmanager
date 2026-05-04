@@ -89,6 +89,7 @@ window.onload = function () {
         div.appendChild(button);
         div.appendChild(categoryLabel);
         container.appendChild(div);
+        initDrag(div);
     });
 };
 
@@ -176,11 +177,62 @@ document.addEventListener('DOMContentLoaded', function () {
     
     searchInput.addEventListener('input', handleSearch);
     clearSearchBtn.addEventListener('click', clearSearch);
-    
+
+    // Auto-fetch title + favicon when URL is pasted/typed
+    const urlInput = document.getElementById('buttonUrl');
+    urlInput.addEventListener('input', debounce(autoFetchUrlMeta, 600));
+
     document.addEventListener('DOMContentLoaded', function () {
         document.body.style.backgroundColor = editMode ? '#0d0000' : 'white';
     });
 });
+
+function debounce(fn, delay) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
+async function autoFetchUrlMeta() {
+    const urlInput = document.getElementById('buttonUrl');
+    const titleInput = document.getElementById('buttonTitle');
+    const iconPreview = document.getElementById('iconPreview');
+    const raw = urlInput.value.trim();
+    if (!raw) return;
+
+    const fullUrl = raw.startsWith('http') ? raw : 'https://' + raw;
+    let hostname;
+    try {
+        hostname = new URL(fullUrl).hostname;
+    } catch {
+        return;
+    }
+
+    // Set favicon immediately via Google's service
+    const faviconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+    selectedIcon = faviconUrl;
+    iconPreview.src = faviconUrl;
+    iconPreview.style.display = 'inline-block';
+
+    // Auto-fill title only if the field is still empty
+    if (titleInput.value.trim()) return;
+
+    try {
+        const res = await fetch(fullUrl);
+        const html = await res.text();
+        const match = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+        if (match && match[1]) {
+            const pageTitle = match[1].trim().slice(0, 25);
+            titleInput.value = pageTitle;
+            titleInput.style.borderColor = '#6366f1';
+            setTimeout(() => titleInput.style.borderColor = '', 1500);
+        }
+    } catch {
+        // Fetch failed (CORS, network) — favicon is still set, title stays empty
+    }
+}
 
 // Search functionality
 function handleSearch(e) {
@@ -740,12 +792,15 @@ function importData(event) {
 
 function initializeCategories() {
     categories = JSON.parse(localStorage.getItem('categories')) || ['Work', 'Personal', 'Social'];
+    const defaultCategory = localStorage.getItem('defaultCategory') || 'all';
+    currentCategory = defaultCategory;
     updateCategoryUI();
 }
 
 function updateCategoryUI() {
     const tabsContainer = document.getElementById('categoryTabs');
     const categoriesList = document.getElementById('categoriesList');
+    const defaultCategory = localStorage.getItem('defaultCategory') || 'all';
 
     tabsContainer.innerHTML = '';
     categoriesList.innerHTML = '';
@@ -755,6 +810,17 @@ function updateCategoryUI() {
     allTab.textContent = 'All';
     allTab.dataset.category = 'all';
     tabsContainer.appendChild(allTab);
+
+    // "All" row in manage panel
+    const allItem = document.createElement('div');
+    allItem.className = 'category-item';
+    allItem.innerHTML = `
+        <span>All</span>
+        <button class="set-default-btn ${defaultCategory === 'all' ? 'is-default' : ''}" data-category="all">
+            ${defaultCategory === 'all' ? '★ Default' : '☆ Set default'}
+        </button>
+    `;
+    categoriesList.appendChild(allItem);
 
     categories.forEach(category => {
         const tab = document.createElement('button');
@@ -767,10 +833,22 @@ function updateCategoryUI() {
         categoryItem.className = 'category-item';
         categoryItem.innerHTML = `
             <span>${category}</span>
+            <button class="set-default-btn ${defaultCategory === category ? 'is-default' : ''}" data-category="${category}">
+                ${defaultCategory === category ? '★ Default' : '☆ Set default'}
+            </button>
             <button class="edit-category" data-category="${category}">✎</button>
             <button class="remove-category" data-category="${category}">×</button>
         `;
         categoriesList.appendChild(categoryItem);
+    });
+
+    document.querySelectorAll('.set-default-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const category = btn.getAttribute('data-category');
+            localStorage.setItem('defaultCategory', category);
+            showToast(`"${category === 'all' ? 'All' : category}" set as default`, 'success');
+            updateCategoryUI();
+        });
     });
 
     document.querySelectorAll('.edit-category').forEach(btn => {
@@ -1003,9 +1081,8 @@ function addButton(title = '', url = '', category = '',isEdit = false) {
         return;
     }
 
-    const urlRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/[\w-]*)*$/i;
-    if (!urlRegex.test(url.trim())) {
-        showCustomAlert('Please enter a valid URL');
+    if (!url.trim()) {
+        showCustomAlert('Please enter a URL');
         return;
     }
 
@@ -1039,6 +1116,7 @@ function addButton(title = '', url = '', category = '',isEdit = false) {
     div.appendChild(button);
     div.appendChild(categoryLabel);
     container.appendChild(div);
+    initDrag(div);
 
     saveButtonToLocal({ title, url, category, image: iconPath });
 
@@ -1081,6 +1159,62 @@ function saveButtonToLocal(buttonData) {
         console.log("Added new button:", buttonData);
     }
 
+    localStorage.setItem('buttons', JSON.stringify(buttons));
+}
+
+let dragSrc = null;
+
+function initDrag(entry) {
+    entry.setAttribute('draggable', 'true');
+
+    entry.addEventListener('dragstart', (e) => {
+        if (editMode) { e.preventDefault(); return; }
+        dragSrc = entry;
+        entry.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    });
+
+    entry.addEventListener('dragend', () => {
+        dragSrc = null;
+        entry.classList.remove('dragging');
+        document.querySelectorAll('.button-entry').forEach(el => el.classList.remove('drag-over'));
+        saveOrderToStorage();
+    });
+
+    entry.addEventListener('dragover', (e) => {
+        if (!dragSrc || dragSrc === entry || editMode) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        const container = document.getElementById('buttonContainer');
+        const entries = [...container.querySelectorAll('.button-entry:not(.dragging)')];
+        const target = entries.find(el => {
+            const rect = el.getBoundingClientRect();
+            return e.clientY < rect.top + rect.height / 2;
+        });
+
+        document.querySelectorAll('.button-entry').forEach(el => el.classList.remove('drag-over'));
+        if (target) {
+            target.classList.add('drag-over');
+            container.insertBefore(dragSrc, target);
+        } else {
+            container.appendChild(dragSrc);
+        }
+    });
+}
+
+function saveOrderToStorage() {
+    const buttons = [];
+    document.querySelectorAll('.button-entry').forEach(entry => {
+        const button = entry.querySelector('button');
+        const img = button.querySelector('img');
+        buttons.push({
+            title: button.textContent.trim(),
+            url: button.getAttribute('data-url'),
+            category: entry.getAttribute('data-category'),
+            image: img ? img.getAttribute('src') : '',
+        });
+    });
     localStorage.setItem('buttons', JSON.stringify(buttons));
 }
 
