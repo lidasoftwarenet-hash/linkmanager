@@ -91,6 +91,8 @@ window.onload = function () {
         container.appendChild(div);
         initDrag(div);
     });
+
+    filterButtons(currentCategory);
 };
 
 window.onclick = function (event) {
@@ -1259,17 +1261,23 @@ function deleteButtonFromLocalStorage(title, url) {
 }
 
 function toggleCategoryManagement() {
-    console.log("toggleCategoryManagement called!");
     const management = document.getElementById('categoryManagement');
+    const btn = document.getElementById('manageCategoriesBtn');
+    const otherBtns = ['addLinkPopUp', 'editToggle', 'cancelEdit', 'exportSettings', 'importSettings'];
     if (management) {
-        management.classList.toggle('visible');
-
-        management.style.display = management.classList.contains('visible') ? 'block' : 'none';
-
-        console.log("Category management classList:", management.classList);
-        console.log("Category section display:", window.getComputedStyle(management).display);
-    } else {
-        console.log("Category management div not found!");
+        const isOpen = management.classList.toggle('visible');
+        management.style.display = isOpen ? 'block' : 'none';
+        if (btn) btn.textContent = isOpen ? 'Cancel' : 'Manage Categories';
+        otherBtns.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.disabled = isOpen;
+                el.classList.toggle('toolbar-disabled', isOpen);
+            }
+        });
+        document.getElementById('categoryTabs').style.display = isOpen ? 'none' : '';
+        document.querySelector('.search-container').style.display = isOpen ? 'none' : '';
+        document.getElementById('buttonContainer').style.display = isOpen ? 'none' : '';
     }
 }
 
@@ -1353,6 +1361,15 @@ function toggleEditMode() {
 
         document.getElementById('editToggle').style.display = 'none';
         document.getElementById('cancelEdit').style.display = 'block';
+
+        const otherBtns = ['manageCategoriesBtn', 'addLinkPopUp', 'exportSettings', 'importSettings'];
+        otherBtns.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.disabled = true; el.classList.add('toolbar-disabled'); }
+        });
+
+        document.getElementById('categoryTabs').style.display = 'none';
+        document.querySelector('.search-container').style.display = 'none';
     } else {
         // Remove edit and remove buttons from all entries
         const controls = document.querySelectorAll('.button-controls');
@@ -1360,6 +1377,15 @@ function toggleEditMode() {
 
         document.getElementById('editToggle').style.display = 'block';
         document.getElementById('cancelEdit').style.display = 'none';
+
+        const otherBtns = ['manageCategoriesBtn', 'addLinkPopUp', 'exportSettings', 'importSettings'];
+        otherBtns.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.disabled = false; el.classList.remove('toolbar-disabled'); }
+        });
+
+        document.getElementById('categoryTabs').style.display = '';
+        document.querySelector('.search-container').style.display = '';
     }
 }
 

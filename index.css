@@ -105,6 +105,7 @@ body {
 }
 
 .button-entry button:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     filter: brightness(1.1);
     box-shadow: 0 5px 16px rgba(102, 126, 234, 0.45);
     transform: scale(1.03);
@@ -251,7 +252,7 @@ body {
     border: none;
     cursor: pointer;
     color: #ef4444;
-    font-size: 18px;
+    font-size: 13px;
     transition: all 0.3s ease;
     padding: 2px 6px;
 }
@@ -313,6 +314,11 @@ button:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     background: white;
+}
+
+.toolbar-disabled {
+    opacity: 0.35;
+    pointer-events: none;
 }
 
 .wide-button {
